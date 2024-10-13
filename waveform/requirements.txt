@@ -1,4 +1,6 @@
-Django>=3.0,<4.0  # Specify your Django version
-pandas>=1.0  # For data manipulation
-obspy>=1.2.2  # For seismic data handling
-psycopg2-binary>=2.9  # PostgreSQL adapter for Python (if using PostgreSQL)
+Django>=3.0,<4.0 
+pandas>=1.0 
+obspy>=1.2.2 
+psycopg2-binary>=2.9  
+celery
+redis

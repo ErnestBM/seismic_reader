@@ -1,11 +1,19 @@
+# waveform/views.py
 from django.http import HttpResponse
 import pandas as pd
 from obspy.clients.fdsn import Client
 from obspy import UTCDateTime
 
 def get_seismic_data(request):
-    client = Client("GFZ")
+    csv_data = process_seismic_data()
 
+    response = HttpResponse(csv_data, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="seismic_samples_with_station_info.csv"'
+    
+    return response
+
+def process_seismic_data():
+    client = Client("GFZ")
     t = UTCDateTime.now() - 300
 
     inventory = client.get_stations(
@@ -41,9 +49,4 @@ def get_seismic_data(request):
     df.insert(0, "Longitude", station_info[0]['Longitude'])
     df.insert(0, "Timestamp", formatted_timestamps) # type: ignore
 
-    csv_data = df.to_csv(index=False)
-
-    response = HttpResponse(csv_data, content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="seismic_samples_with_station_info.csv"'
-
-    return response
+    return df.to_csv(index=False)
