@@ -1,8 +1,8 @@
 # waveform/views.py
 from django.http import HttpResponse
-import pandas as pd
-from obspy.clients.fdsn import Client
-from obspy import UTCDateTime
+import pandas as pd # type: ignore
+from obspy.clients.fdsn import Client # type: ignore
+from obspy import UTCDateTime # type: ignore
 
 def get_seismic_data(request):
     csv_data = process_seismic_data()

@@ -48,3 +48,6 @@ services:
     depends_on:
       - redis
       - web
+
+volumes:
+  postgres_data:
