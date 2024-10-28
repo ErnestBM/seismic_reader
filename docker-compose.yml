@@ -1,12 +1,26 @@
 version: "3.8"
 
 services:
-  web:
+  waveform:
     build:
       context: .
       dockerfile: waveform/Dockerfile
     ports:
       - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    volumes:
+      - .:/app
+
+  weather:
+    build:
+      context: .
+      dockerfile: weather/Dockerfile
+    ports:
+      - "8001:8000"
     depends_on:
       - db
       - redis
@@ -27,7 +41,7 @@ services:
   redis:
     image: redis:alpine
 
-  celery:
+  celery-waveform:
     build:
       context: .
       dockerfile: waveform/Dockerfile
@@ -36,9 +50,9 @@ services:
       - .:/app
     depends_on:
       - redis
-      - web
+      - waveform
 
-  celery-beat:
+  celery-beat-waveform:
     build:
       context: .
       dockerfile: waveform/Dockerfile
@@ -47,7 +61,29 @@ services:
       - .:/app
     depends_on:
       - redis
-      - web
+      - waveform
+
+  celery-weather:
+    build:
+      context: .
+      dockerfile: weather/Dockerfile
+    command: celery -A vertex worker --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - weather
+
+  celery-beat-weather:
+    build:
+      context: .
+      dockerfile: weather/Dockerfile
+    command: celery -A vertex beat --loglevel=info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - weather
 
 volumes:
   postgres_data:

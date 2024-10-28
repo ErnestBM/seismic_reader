@@ -11,7 +11,7 @@ def fetch_seismic_data():
     print("Seismic data downloaded successfully")
     
     # Ensure the directory exists
-    output_dir = './tmp/'
+    output_dir = './tmp_waveform/'
     os.makedirs(output_dir, exist_ok=True)
     
     # Write data to file

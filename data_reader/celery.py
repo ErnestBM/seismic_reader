@@ -16,6 +16,11 @@ app.conf.beat_schedule = {
         'task': 'waveform.tasks.fetch_seismic_data',  
         'schedule': 10.0, 
     },
+    'fetch-weather-data-every-60-seconds': {
+        'task': 'weather.tasks.fetch_weather_data_task',
+        'schedule': 10.0,  
+        'args': (35, 139), 
+    },
 }
 
 @app.task(bind=True)
