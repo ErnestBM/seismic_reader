@@ -3,7 +3,7 @@ version: "3.8"
 services:
   waveform:
     build:
-      context: .
+      context: ./
       dockerfile: waveform/Dockerfile
     ports:
       - "8000:8000"
@@ -12,22 +12,23 @@ services:
       - redis
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
       - .:/app
 
-  weather:
-    build:
-      context: .
-      dockerfile: weather/Dockerfile
-    ports:
-      - "8001:8000"
-    depends_on:
-      - db
-      - redis
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-    volumes:
-      - .:/app
+  # weather:
+  #   build:
+  #     context: .
+  #     dockerfile: weather/Dockerfile
+  #   ports:
+  #     - "8001:8001"
+  #   depends_on:
+  #     - db
+  #     - redis
+  #   environment:
+  #     - CELERY_BROKER_URL=redis://redis:6379/1
+  #   volumes:
+  #     - ./weather:/app
 
   db:
     image: postgres:13
@@ -40,12 +41,21 @@ services:
 
   redis:
     image: redis:alpine
+    # healthcheck:
+    #   test: ["CMD", "redis-cli", "ping"]
+    #   interval: 5s
+    #   timeout: 3s
+    #   retries: 5
 
   celery-waveform:
     build:
-      context: .
+      context: ./
       dockerfile: waveform/Dockerfile
-    command: celery -A vertex worker --loglevel=info
+    command: celery -A data_reader worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
     volumes:
       - .:/app
     depends_on:
@@ -54,36 +64,39 @@ services:
 
   celery-beat-waveform:
     build:
-      context: .
+      context: ./
       dockerfile: waveform/Dockerfile
-    command: celery -A vertex beat --loglevel=info
+    command: celery -A data_reader beat --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
-      - .:/app
+      - ./:/app
     depends_on:
       - redis
       - waveform
 
-  celery-weather:
-    build:
-      context: .
-      dockerfile: weather/Dockerfile
-    command: celery -A vertex worker --loglevel=info
-    volumes:
-      - .:/app
-    depends_on:
-      - redis
-      - weather
+  # celery-weather:
+  #   build:
+  #     context: .
+  #     dockerfile: weather/Dockerfile
+  #   command: celery -A data_reader worker --loglevel=info
+  #   volumes:
+  #     - .weather:/app
+  #   depends_on:
+  #     - redis
+  #     - weather
 
-  celery-beat-weather:
-    build:
-      context: .
-      dockerfile: weather/Dockerfile
-    command: celery -A vertex beat --loglevel=info
-    volumes:
-      - .:/app
-    depends_on:
-      - redis
-      - weather
+  # celery-beat-weather:
+  #   build:
+  #     context: .
+  #     dockerfile: weather/Dockerfile
+  #   command: celery -A data_reader beat --loglevel=info
+  #   volumes:
+  #     - .weather:/app
+  #   depends_on:
+  #     - redis
+  #     - weather
 
 volumes:
   postgres_data:
