@@ -1,0 +1,6 @@
+.vscode
+.DS_Store
+env
+celerybeat-schedule
+celerybeat-schedule.db
+db.sqlite3
